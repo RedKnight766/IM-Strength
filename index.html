@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Iron Strength">
+<title>Ironman Strength Tracker</title>
+<style>
+:root {
+  --blue-d:#0C447C; --blue-l:#E6F1FB;
+  --green-d:#0F6E56; --green-l:#E1F5EE;
+  --amber-d:#854F0B; --amber-l:#FAEEDA;
+  --coral-d:#993C1D; --coral-l:#FAECE7;
+  --pink-d:#993556; --pink-l:#FBEAF0;
+  --purp-d:#3C3489; --purp-l:#EEEDFE;
+  --gray:#666666; --lgray:#F5F5F5; --mgray:#DDDDDD; --dgray:#333333;
+  --bg:#FAFAFA;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html,body { margin:0; padding:0; min-height:100%; background:var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  color: var(--dgray); overscroll-behavior:none; }
+#app { display:flex; flex-direction:column; min-height:100vh; max-width:480px; margin:0 auto;
+  background:#fff; }
+
+/* Header */
+#topbar { padding: 14px 14px 8px 14px; background:var(--blue-d); color:#fff; }
+#topbar .row1 { display:flex; justify-content:space-between; align-items:center; font-size:12px; opacity:0.85; }
+#topbar .row2 { display:flex; justify-content:space-between; align-items:baseline; margin-top:4px; }
+#topbar h1 { font-size:20px; margin:0; font-weight:700; }
+#topbar .sec { font-size:13px; font-weight:600; color:#FFD9A8; }
+#progressBar { height:4px; background:rgba(255,255,255,0.25); border-radius:2px; margin-top:8px; overflow:hidden; }
+#progressFill { height:100%; background:#fff; border-radius:2px; transition:width .25s; }
+
+/* Scroll area */
+#content { flex:1 1 auto; overflow-y:auto; padding: 10px 14px 8px 14px; -webkit-overflow-scrolling:touch; min-height:0; }
+
+.section-label { font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--gray); margin: 14px 0 6px 0; display:flex; align-items:center; gap:6px; }
+.section-label .dot { width:8px; height:8px; border-radius:50%; }
+
+.warmup-box { font-size:13px; color:var(--gray); background:var(--lgray); border-radius:10px;
+  padding:10px 12px; line-height:1.4; }
+
+/* Exercise cards */
+.ex-card { border:1px solid var(--mgray); border-radius:12px; padding:12px; margin-bottom:10px; background:#fff; }
+.ex-head { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px; }
+.ex-name { font-size:15px; font-weight:700; line-height:1.3; }
+.ex-eq { font-size:12px; color:var(--gray); font-style:italic; margin-top:2px; }
+.ex-badge { font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
+.badge-bilateral { background:var(--blue-l); color:var(--blue-d); }
+.badge-unilateral { background:var(--green-l); color:var(--green-d); }
+.badge-secondary { background:var(--amber-l); color:var(--amber-d); }
+.ex-sets { font-size:13px; color:var(--gray); margin:4px 0 10px 0; font-weight:600; }
+
+.input-row { display:flex; gap:8px; }
+.input-group { flex:1; }
+.input-group label { font-size:10px; color:var(--gray); font-weight:600; text-transform:uppercase;
+  letter-spacing:.04em; display:block; margin-bottom:3px; }
+.input-group input, .input-group textarea {
+  width:100%; border:1px solid var(--mgray); border-radius:8px; padding:8px 10px;
+  font-size:15px; font-family:inherit; background:#fcfcfc; color:var(--dgray);
+}
+.input-group input:focus, .input-group textarea:focus { outline:2px solid var(--blue-d); border-color:var(--blue-d); }
+.input-group textarea { resize:none; height:38px; }
+.weight-input { max-width:90px; }
+.last-time { font-size:11px; color:#999; margin-top:5px; }
+
+/* Met con */
+.metcon-box { background:var(--coral-l); border-radius:12px; padding:12px; }
+.metcon-title { font-size:11px; font-weight:700; color:var(--coral-d); letter-spacing:.05em; margin-bottom:4px; }
+.metcon-text { font-size:14px; line-height:1.45; color:var(--dgray); }
+.metcon-kit { font-size:12px; color:var(--gray); font-style:italic; margin-top:6px; }
+.metcon-notes { margin-top:10px; }
+
+.note-box { font-size:12px; color:var(--gray); font-style:italic; background:var(--lgray);
+  border-radius:10px; padding:9px 11px; margin: 8px 0 4px 0; line-height:1.4; }
+
+/* Bottom bar */
+#bottombar { padding: 10px 14px 16px 14px;
+  background:#fff; border-top:1px solid var(--mgray); display:flex; gap:10px; }
+.nav-btn { flex:0 0 52px; border:1px solid var(--mgray); border-radius:12px; background:#fff;
+  font-size:20px; color:var(--gray); display:flex; align-items:center; justify-content:center; }
+.nav-btn:active { background:var(--lgray); }
+#completeBtn { flex:1; border:none; border-radius:12px; background:var(--green-d); color:#fff;
+  font-size:16px; font-weight:700; padding:14px; }
+#completeBtn:active { background:#0a5544; }
+
+/* Focus color accents per muscle group */
+.focus-squat   #topbar { background:var(--amber-d); }
+.focus-chest   #topbar { background:var(--blue-d); }
+.focus-deadlift#topbar { background:var(--coral-d); }
+.focus-shoulders #topbar { background:var(--green-d); }
+.focus-frontsquat #topbar { background:var(--pink-d); }
+.focus-back    #topbar { background:var(--purp-d); }
+
+.toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
+  background:var(--dgray); color:#fff; padding:10px 18px; border-radius:24px;
+  font-size:14px; font-weight:600; opacity:0; transition:opacity .3s, transform .3s;
+  pointer-events:none; z-index:50; }
+.toast.show { opacity:1; transform:translateX(-50%) translateY(-6px); }
+
+.day-pill { font-size:11px; background:rgba(255,255,255,0.18); padding:2px 8px; border-radius:10px; }
+</style>
+</head>
+<body>
+<div id="app" class="">
+  <div id="topbar">
+    <div class="row1">
+      <span id="blockLabel">Block 1 · Weeks 1–3</span>
+      <span class="day-pill" id="dayPill">Day 1 / 36</span>
+    </div>
+    <div class="row2">
+      <h1 id="focusTitle">Squat</h1>
+      <span class="sec" id="secTitle">+ Biceps</span>
+    </div>
+    <div id="progressBar"><div id="progressFill"></div></div>
+  </div>
+
+  <div id="content">
+    <div class="section-label"><span class="dot" style="background:#EF9F27"></span>Warm-up</div>
+    <div class="warmup-box" id="warmupText"></div>
+
+    <div class="section-label"><span class="dot" style="background:#1D9E75"></span>Superset — 4 rounds, 90s rest</div>
+    <div id="exercisesContainer"></div>
+
+    <div class="note-box" id="noteText"></div>
+
+    <div class="section-label"><span class="dot" style="background:#D85A30"></span>Met con (10 min)</div>
+    <div class="metcon-box">
+      <div class="metcon-title">MET CON · 10 MIN</div>
+      <div class="metcon-text" id="metconText"></div>
+      <div class="metcon-kit" id="metconKit"></div>
+      <div class="metcon-notes">
+        <div class="input-group">
+          <label>Met con notes</label>
+          <textarea id="metconNotes" placeholder="Rounds completed, time, RPE..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div style="height:12px"></div>
+  </div>
+
+  <div id="bottombar">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous day">‹</button>
+    <button id="completeBtn">Mark Completed → Next</button>
+    <button class="nav-btn" id="nextBtn" aria-label="Next day">›</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const PROGRAM = [{"block": 1, "blockWk": "Weeks 1\u20133 \u2014 Establish Base", "focus": "squat", "secondary": "Biceps", "warmup": "5 min assault bike \u00b7 goblet squat hold 45s (35lb KB) \u00b7 hip circle x10/side", "exercises": [{"n": "Barbell back squat", "u": false, "s": "4x5 @80% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Bulgarian split squat (DBs)", "u": true, "s": "3x8/side", "eq": "DBs 25-40lb + flat bench", "role": "Unilateral"}, {"n": "Standing barbell curl", "u": false, "s": "3x10", "eq": "curl bar", "role": "Secondary"}], "note": "4 rounds, 90s rest. Squat first while fresh, split squat exposes side imbalance, curls finish the arms.", "metcon": "EMOM 10 min: odd = 8 alt reverse lunges (35lb KBs) \u00b7 even = 10 box jumps.", "metconEquip": "35lb KBs \u00b7 plyo boxes"}, {"block": 1, "blockWk": "Weeks 1\u20133 \u2014 Establish Base", "focus": "chest", "secondary": "Calves", "warmup": "5 min Concept 2 row \u00b7 pec doorframe stretch \u00b7 band pull-aparts x20", "exercises": [{"n": "Barbell flat bench press", "u": false, "s": "4x5 @80% 1RM", "eq": "straight barbell + flat bench", "role": "Bilateral"}, {"n": "Single-arm DB floor press", "u": true, "s": "3x10/side", "eq": "DB 30-45lb + floor", "role": "Unilateral"}, {"n": "Standing DB calf raise", "u": false, "s": "3x15", "eq": "DBs (any) held at sides", "role": "Secondary"}], "note": "4 rounds, 90s rest. Bench then single-arm floor press for stability, calves at the end for tibial/run resilience.", "metcon": "AMRAP 10 min: 10 push-ups + 8 KB swings (53lb) + 5 SA KB rows/side (35lb).", "metconEquip": "53lb KB \u00b7 35lb KB"}, {"block": 1, "blockWk": "Weeks 1\u20133 \u2014 Establish Base", "focus": "deadlift", "secondary": "Abs/Core", "warmup": "5 min Concept 2 row \u00b7 cat-cow x10 \u00b7 PVC hip hinge drill x10", "exercises": [{"n": "Conventional barbell deadlift", "u": false, "s": "4x4 @82% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Single-leg Romanian deadlift (DB)", "u": true, "s": "3x8/side", "eq": "DBs 25-40lb", "role": "Unilateral"}, {"n": "Hanging knee raise", "u": false, "s": "3x12", "eq": "pull-up bar", "role": "Secondary"}], "note": "4 rounds, 90s rest. Deadlift then single-leg RDL for hip stability, knee raises decompress the spine.", "metcon": "EMOM 10 min: odd = 8 KB swings (72lb) \u00b7 even = 6 SL KB RDL/side (35lb).", "metconEquip": "72lb KB \u00b7 35lb KB"}, {"block": 1, "blockWk": "Weeks 1\u20133 \u2014 Establish Base", "focus": "shoulders", "secondary": "Triceps", "warmup": "5 min assault bike \u00b7 Y-T-W with 10lb DBs x10 \u00b7 band pull-aparts x20", "exercises": [{"n": "Barbell strict overhead press", "u": false, "s": "4x5 @80% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Single-arm DB press (standing)", "u": true, "s": "3x8/side", "eq": "DB 25-40lb", "role": "Unilateral"}, {"n": "Cable tricep pushdown", "u": false, "s": "3x12", "eq": "cable pulley", "role": "Secondary"}], "note": "4 rounds, 90s rest. Standing single-arm press is a full core stability test \u2014 brace hard.", "metcon": "3 rounds: 10 SA DB push press/side (35lb) + 15 face pulls + 20 alt lateral raises. 30s rest.", "metconEquip": "35lb DB \u00b7 cable"}, {"block": 1, "blockWk": "Weeks 1\u20133 \u2014 Establish Base", "focus": "frontsquat", "secondary": "Minor Shoulder (rear delt/rotator)", "warmup": "5 min assault bike \u00b7 ankle dorsiflexion mob \u00b7 deep squat hang 30s on bar", "exercises": [{"n": "Barbell front squat (clean grip)", "u": false, "s": "4x5 @75% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Reverse lunge \u2014 KB front rack", "u": true, "s": "3x8/side", "eq": "35lb KBs both hands", "role": "Unilateral"}, {"n": "Cable face pull", "u": false, "s": "3x15", "eq": "cable pulley", "role": "Secondary"}], "note": "4 rounds, 90s rest. Front squat + front rack lunge mirror torso demand; face pulls balance shoulder health.", "metcon": "4 rounds: 8 KB goblet reverse lunges/side + 10 wall balls (20lb) + 20s L-sit on dip bar. 45s rest.", "metconEquip": "35lb KB \u00b7 20lb wall ball \u00b7 dip bar"}, {"block": 1, "blockWk": "Weeks 1\u20133 \u2014 Establish Base", "focus": "back", "secondary": "Biceps", "warmup": "5 min treadmill \u00b7 lat stretch on pull-up bar \u00b7 doorframe pec stretch", "exercises": [{"n": "Weighted pull-up (vest)", "u": false, "s": "4x6 + vest", "eq": "pull-up bar + weighted vest", "role": "Bilateral"}, {"n": "Single-arm DB row (braced)", "u": true, "s": "3x8/side", "eq": "DB 35-50lb + flat bench", "role": "Unilateral"}, {"n": "Standing DB hammer curl", "u": false, "s": "3x10", "eq": "DBs 20-30lb", "role": "Secondary"}], "note": "4 rounds, 90s rest. Weighted pull-up then single-arm row reveals lat imbalance, hammer curl finishes the arm.", "metcon": "AMRAP 10 min: 5 pull-ups + 8 SA KB push press/side (35lb) + 10 slam ball slams (25lb).", "metconEquip": "pull-up bar \u00b7 35lb KB \u00b7 25lb slam ball"}, {"block": 2, "blockWk": "Weeks 4\u20136 \u2014 Load Unilateral", "focus": "squat", "secondary": "Biceps", "warmup": "5 min assault bike \u00b7 banded clamshell x15 \u00b7 leg swing x10/side", "exercises": [{"n": "Barbell pause squat (2s hold)", "u": false, "s": "4x6", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Bulgarian split squat (barbell)", "u": true, "s": "3x6/side", "eq": "straight barbell + flat bench", "role": "Unilateral"}, {"n": "Seated DB curl", "u": false, "s": "3x10", "eq": "DBs 20-30lb + flat bench", "role": "Secondary"}], "note": "4 rounds, 90s rest. Barbell split squat is significantly harder than DB \u2014 respect the transition.", "metcon": "AMRAP 10 min: 10 alt reverse lunges (53lb KB goblet) + 5 box jumps + 10 v-ups.", "metconEquip": "53lb KB \u00b7 plyo boxes"}, {"block": 2, "blockWk": "Weeks 4\u20136 \u2014 Load Unilateral", "focus": "chest", "secondary": "Calves", "warmup": "5 min Concept 2 row \u00b7 foam roll thoracic \u00b7 band pull-aparts x20", "exercises": [{"n": "DB incline press (incline bench)", "u": false, "s": "4x8 @RPE 8", "eq": "DBs 35-50lb + incline bench", "role": "Bilateral"}, {"n": "Single-arm DB incline press", "u": true, "s": "3x10/side", "eq": "DB 25-40lb + incline bench", "role": "Unilateral"}, {"n": "Seated calf raise (DB on knee)", "u": false, "s": "3x15", "eq": "DB + flat bench", "role": "Secondary"}], "note": "4 rounds, 90s rest. Single-arm incline forces strong anti-rotation through the core.", "metcon": "3 rounds: 10 SA DB press/side (35lb) + 10 SA KB row/side (53lb) + 15 push-ups. 30s rest.", "metconEquip": "35lb DB \u00b7 53lb KB"}, {"block": 2, "blockWk": "Weeks 4\u20136 \u2014 Load Unilateral", "focus": "deadlift", "secondary": "Abs/Core", "warmup": "5 min Concept 2 row \u00b7 quadruped hip ext x10 \u00b7 bird-dog x10/side", "exercises": [{"n": "Barbell Romanian deadlift", "u": false, "s": "4x8", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Single-leg RDL (barbell, one hand)", "u": true, "s": "3x6/side", "eq": "light barbell", "role": "Unilateral"}, {"n": "Weighted plank", "u": false, "s": "3x40s", "eq": "weighted vest + floor", "role": "Secondary"}], "note": "4 rounds, 90s rest. SL barbell RDL is a significant balance step up \u2014 go light first set.", "metcon": "3 rounds: 8 SL KB RDL/side (35lb) + 12 KB swings (72lb) + 15 hollow rocks. 60s rest.", "metconEquip": "35lb KB \u00b7 72lb KB"}, {"block": 2, "blockWk": "Weeks 4\u20136 \u2014 Load Unilateral", "focus": "shoulders", "secondary": "Triceps", "warmup": "5 min assault bike \u00b7 sleeper stretch 30s/side \u00b7 YTWL x8 with 10lb DBs", "exercises": [{"n": "DB seated strict press", "u": false, "s": "4x8", "eq": "DBs 25-40lb + flat bench", "role": "Bilateral"}, {"n": "Single-arm DB press (standing)", "u": true, "s": "3x8/side", "eq": "DB 25-40lb", "role": "Unilateral"}, {"n": "Overhead rope tricep extension", "u": false, "s": "3x12", "eq": "cable pulley + rope", "role": "Secondary"}], "note": "4 rounds, 90s rest. Seated press isolates delts before the standing single-arm core challenge.", "metcon": "Tabata 8x20s on/10s off: SA KB push press (35lb) alternating sides each interval.", "metconEquip": "35lb KB"}, {"block": 2, "blockWk": "Weeks 4\u20136 \u2014 Load Unilateral", "focus": "frontsquat", "secondary": "Minor Shoulder (rear delt/rotator)", "warmup": "5 min assault bike \u00b7 ankle rocks x20 \u00b7 thoracic extension over foam roller", "exercises": [{"n": "Cyclist squat (heels on plates)", "u": false, "s": "4x8", "eq": "barbell + plates as heel raise", "role": "Bilateral"}, {"n": "Reverse lunge \u2014 barbell back rack", "u": true, "s": "3x8/side", "eq": "straight barbell (light)", "role": "Unilateral"}, {"n": "Cable rear delt fly", "u": false, "s": "3x15", "eq": "cable pulley", "role": "Secondary"}], "note": "4 rounds, 90s rest. Barbell reverse lunge is the athletic run-power standard \u2014 control the descent.", "metcon": "4 rounds: 10 KB reverse lunges/side (front rack 35lb) + 15 jump rope + 10 wall balls (20lb). 45s rest.", "metconEquip": "35lb KBs \u00b7 jump rope \u00b7 20lb wall ball"}, {"block": 2, "blockWk": "Weeks 4\u20136 \u2014 Load Unilateral", "focus": "back", "secondary": "Biceps", "warmup": "5 min treadmill \u00b7 world greatest stretch x5/side \u00b7 lat stretch on bar", "exercises": [{"n": "Lat pulldown (wide grip)", "u": false, "s": "4x10", "eq": "lat pulldown cable", "role": "Bilateral"}, {"n": "Single-arm lat pulldown", "u": true, "s": "3x10/side", "eq": "lat pulldown cable", "role": "Unilateral"}, {"n": "Incline DB curl", "u": false, "s": "3x10", "eq": "DBs 20-30lb + incline bench", "role": "Secondary"}], "note": "4 rounds, 90s rest. Single-arm pulldown isolates each lat independently \u2014 initiate with the lat, not the bicep.", "metcon": "AMRAP 10 min: 6 chin-ups + 8 SA KB press/side (35lb) + 10 slam ball slams (25lb).", "metconEquip": "pull-up bar \u00b7 35lb KB \u00b7 25lb slam ball"}, {"block": 3, "blockWk": "Weeks 7\u20139 \u2014 Intensify", "focus": "squat", "secondary": "Biceps", "warmup": "5 min assault bike \u00b7 banded hip circle x15 \u00b7 hip flexor lunge stretch 30s/side", "exercises": [{"n": "Box squat (barbell, parallel box)", "u": false, "s": "4x5 @80% 1RM", "eq": "straight barbell + plyo box", "role": "Bilateral"}, {"n": "RFESS \u2014 heavy DBs", "u": true, "s": "3x8/side", "eq": "DBs 40-50lb + flat bench", "role": "Unilateral"}, {"n": "EZ bar curl", "u": false, "s": "3x10", "eq": "curl bar", "role": "Secondary"}], "note": "4 rounds, 90s rest. RFESS at 40+ lb DBs is elite single-leg strength \u2014 track side-to-side gap.", "metcon": "AMRAP 10 min: 10 alt reverse lunges (53lb KB goblet) + 10 box jumps + 10 toes-to-bar.", "metconEquip": "53lb KB \u00b7 plyo boxes \u00b7 pull-up bar"}, {"block": 3, "blockWk": "Weeks 7\u20139 \u2014 Intensify", "focus": "chest", "secondary": "Calves", "warmup": "5 min Concept 2 row \u00b7 foam roll lats + thoracic \u00b7 PNF pec stretch 30s/side", "exercises": [{"n": "Weighted dips", "u": false, "s": "4x6-8 + vest", "eq": "dip bar + weighted vest", "role": "Bilateral"}, {"n": "Single-arm DB floor press (heavy)", "u": true, "s": "3x10/side", "eq": "DB 35-45lb", "role": "Unilateral"}, {"n": "Single-leg calf raise", "u": true, "s": "3x15/side", "eq": "bodyweight (hold DB if easy)", "role": "Secondary"}], "note": "4 rounds, 90s rest. Track vest weight on dips block to block. Single-leg calf raise exposes ankle imbalance.", "metcon": "5 rounds: 8 dips (BW) + 8 SA KB row/side (53lb) + 10 push-ups. 30s rest.", "metconEquip": "dip bar \u00b7 53lb KB"}, {"block": 3, "blockWk": "Weeks 7\u20139 \u2014 Intensify", "focus": "deadlift", "secondary": "Abs/Core", "warmup": "5 min Concept 2 row \u00b7 90/90 hip stretch \u00b7 bird-dog x10/side", "exercises": [{"n": "Sumo deadlift (barbell)", "u": false, "s": "4x5 @80% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Single-leg RDL \u2014 KB contralateral", "u": true, "s": "3x8/side", "eq": "35-53lb KB", "role": "Unilateral"}, {"n": "Weighted decline sit-up", "u": false, "s": "3x12", "eq": "incline bench (decline setup) + plate", "role": "Secondary"}], "note": "4 rounds, 90s rest. Sumo changes hip angle \u2014 great for tight hips. Contralateral KB maximizes stability demand.", "metcon": "EMOM 10 min: odd = 6 KB swings (72lb) + 5 SL RDL/side (35lb) \u00b7 even = 20s farmer carry.", "metconEquip": "72lb KB \u00b7 35lb KB \u00b7 53lb KBs"}, {"block": 3, "blockWk": "Weeks 7\u20139 \u2014 Intensify", "focus": "shoulders", "secondary": "Triceps", "warmup": "5 min assault bike \u00b7 band dislocates x10 \u00b7 face pulls x20 light cable", "exercises": [{"n": "Push press (barbell)", "u": false, "s": "4x5 @77% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Single-arm KB press (standing)", "u": true, "s": "3x8/side", "eq": "35-53lb KB", "role": "Unilateral"}, {"n": "Skull crusher (EZ bar)", "u": false, "s": "3x10", "eq": "curl bar + flat bench", "role": "Secondary"}], "note": "4 rounds, 90s rest. KB press at 53lb is a benchmark \u2014 log the load each session.", "metcon": "3 rounds: 10 SA KB push press/side (35lb) + 10 pull-ups + 10 box jumps. 45s rest.", "metconEquip": "35lb KB \u00b7 pull-up bar \u00b7 plyo boxes"}, {"block": 3, "blockWk": "Weeks 7\u20139 \u2014 Intensify", "focus": "frontsquat", "secondary": "Minor Shoulder (rear delt/rotator)", "warmup": "5 min assault bike \u00b7 deep squat hold 30s on bar \u00b7 ankle mob x20", "exercises": [{"n": "Yoke bar front-loaded squat", "u": false, "s": "4x6", "eq": "yoke barbell", "role": "Bilateral"}, {"n": "Bulgarian split squat \u2014 KB front rack", "u": true, "s": "3x8/side", "eq": "35lb KBs + flat bench", "role": "Unilateral"}, {"n": "Cable Y-raise (rotator/rear delt)", "u": false, "s": "3x12", "eq": "cable pulley low", "role": "Secondary"}], "note": "4 rounds, 90s rest. Yoke bar relieves wrist load while keeping upright torso demand.", "metcon": "4 rounds: 8 KB front rack reverse lunges/side (35lb) + 15 jump rope + 10 wall balls (20lb). 45s rest.", "metconEquip": "35lb KBs \u00b7 jump rope \u00b7 20lb wall ball"}, {"block": 3, "blockWk": "Weeks 7\u20139 \u2014 Intensify", "focus": "back", "secondary": "Biceps", "warmup": "5 min treadmill \u00b7 cat-cow x10 \u00b7 doorframe pec stretch", "exercises": [{"n": "Weighted pull-up (vest, wider grip)", "u": false, "s": "4x6 + vest", "eq": "pull-up bar + weighted vest", "role": "Bilateral"}, {"n": "Single-arm landmine row", "u": true, "s": "3x8/side", "eq": "barbell landmine setup", "role": "Unilateral"}, {"n": "Zottman curl", "u": false, "s": "3x10", "eq": "DBs 15-25lb", "role": "Secondary"}], "note": "4 rounds, 90s rest. Landmine row hits the lat at a unique angle \u2014 worth the setup.", "metcon": "3 rounds: 8 SA KB row/side (53lb) + 10 push-ups + 15 KB swings (53lb). 45s rest.", "metconEquip": "53lb KB \u00b7 pull-up bar"}, {"block": 4, "blockWk": "Weeks 10\u201312 \u2014 Peak", "focus": "squat", "secondary": "Biceps", "warmup": "5 min assault bike \u00b7 goblet squat hold 60s (35lb) \u00b7 hip flexor lunge stretch", "exercises": [{"n": "Tempo back squat (3-1-1)", "u": false, "s": "4x5 @77% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "RFESS \u2014 barbell (peak load)", "u": true, "s": "4x6/side", "eq": "straight barbell + flat bench", "role": "Unilateral"}, {"n": "Barbell curl (heavy)", "u": false, "s": "3x8", "eq": "curl bar", "role": "Secondary"}], "note": "4 rounds, 90s rest. Barbell RFESS should exceed block 1 DB load significantly \u2014 record every session.", "metcon": "5 rounds: 8 reverse lunges/side (53lb KB goblet) + 8 box jumps + 10 v-ups. 30s rest.", "metconEquip": "53lb KB \u00b7 plyo boxes"}, {"block": 4, "blockWk": "Weeks 10\u201312 \u2014 Peak", "focus": "chest", "secondary": "Calves", "warmup": "5 min Concept 2 row \u00b7 thoracic foam roll \u00b7 PNF pec stretch", "exercises": [{"n": "Barbell floor press (peak)", "u": false, "s": "4x6 @82% 1RM", "eq": "straight barbell + floor", "role": "Bilateral"}, {"n": "Single-arm DB press (standing, heavy)", "u": true, "s": "3x6/side", "eq": "DB 40-50lb", "role": "Unilateral"}, {"n": "Single-leg weighted calf raise", "u": true, "s": "3x12/side", "eq": "DB held in one hand", "role": "Secondary"}], "note": "4 rounds, 90s rest. Floor press limits ROM \u2014 peak pec contraction at lockout.", "metcon": "For time: 21-15-9 push-ups + pull-ups. Then 3x8 SA KB swing/side (53lb). Record total time.", "metconEquip": "pull-up bar \u00b7 53lb KB"}, {"block": 4, "blockWk": "Weeks 10\u201312 \u2014 Peak", "focus": "deadlift", "secondary": "Abs/Core", "warmup": "5 min Concept 2 row \u00b7 90/90 hip stretch \u00b7 PVC RDL x10", "exercises": [{"n": "Trap bar deadlift (high handles)", "u": false, "s": "4x6 @82% 1RM", "eq": "trap barbell", "role": "Bilateral"}, {"n": "Single-leg RDL (barbell, peak load)", "u": true, "s": "4x5/side", "eq": "light-moderate barbell", "role": "Unilateral"}, {"n": "Toes-to-bar", "u": false, "s": "4x8", "eq": "pull-up bar", "role": "Secondary"}], "note": "4 rounds, 90s rest. Trap bar reduces spinal load \u2014 good peaking tool. Strict toes-to-bar, no swinging.", "metcon": "EMOM 10 min: odd = 5 trap bar DL (70%) + 5 SL RDL/side \u00b7 even = 20s farmer carry (53lb each).", "metconEquip": "trap barbell \u00b7 53lb KBs"}, {"block": 4, "blockWk": "Weeks 10\u201312 \u2014 Peak", "focus": "shoulders", "secondary": "Triceps", "warmup": "5 min assault bike \u00b7 face pulls x20 \u00b7 band dislocates x10", "exercises": [{"n": "Push press (barbell, peak)", "u": false, "s": "5x4 @80% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Single-arm KB press (53lb benchmark)", "u": true, "s": "4x5/side", "eq": "53lb KB", "role": "Unilateral"}, {"n": "Close-grip floor press", "u": false, "s": "3x8", "eq": "straight barbell + floor", "role": "Secondary"}], "note": "4 rounds, 90s rest. Log the 53lb SA KB press reps \u2014 this is a 12-week marker.", "metcon": "AMRAP 10 min: 8 SA KB push press/side (35lb) + 8 pull-ups + 8 box jumps. Compare to block 1.", "metconEquip": "35lb KB \u00b7 pull-up bar \u00b7 plyo boxes"}, {"block": 4, "blockWk": "Weeks 10\u201312 \u2014 Peak", "focus": "frontsquat", "secondary": "Minor Shoulder (rear delt/rotator)", "warmup": "5 min assault bike \u00b7 deep squat hold 60s \u00b7 ankle mob", "exercises": [{"n": "Front squat (peak)", "u": false, "s": "5x3 @85% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Bulgarian split squat (heavy DBs, peak)", "u": true, "s": "4x6/side", "eq": "DBs 45-50lb + flat bench", "role": "Unilateral"}, {"n": "Band external rotation", "u": true, "s": "3x15/side", "eq": "resistance band", "role": "Secondary"}], "note": "4 rounds, 90s rest. Rest 2 full min between A pairs on the front squat. Band rotations protect the rotator cuff.", "metcon": "3 rounds: 10 KB front rack reverse lunges/side (35lb) + 15 jump rope + 15 sit-ups. 60s rest.", "metconEquip": "35lb KBs \u00b7 jump rope"}, {"block": 4, "blockWk": "Weeks 10\u201312 \u2014 Peak", "focus": "back", "secondary": "Biceps", "warmup": "5 min treadmill \u00b7 band pull-aparts x20 \u00b7 doorframe pec stretch", "exercises": [{"n": "Weighted pull-up (peak)", "u": false, "s": "5x4 + vest", "eq": "pull-up bar + weighted vest", "role": "Bilateral"}, {"n": "Single-arm landmine row (heavy)", "u": true, "s": "4x6/side", "eq": "barbell landmine setup", "role": "Unilateral"}, {"n": "Hammer curl (heavy)", "u": false, "s": "3x8", "eq": "DBs 30-40lb", "role": "Secondary"}], "note": "4 rounds, 90s rest. You should be measurably stronger than block 1 \u2014 compare load and reps.", "metcon": "AMRAP 10 min: 5 pull-ups + 8 SA KB swing/side (53lb) + 10 push-ups + 10 slam balls (25lb). Beat block 1.", "metconEquip": "pull-up bar \u00b7 53lb KB \u00b7 25lb slam ball"}, {"block": 5, "blockWk": "Weeks 13\u201315 \u2014 Strength-Power", "focus": "squat", "secondary": "Biceps", "warmup": "5 min assault bike \u00b7 hip 90/90 mobility x5/side \u00b7 jump squat warm-up x5 (BW)", "exercises": [{"n": "Barbell squat \u2014 wave loading 5-3-5-3", "u": false, "s": "4 sets alt 5@77%/3@85%", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Lateral lunge (DB, loaded)", "u": true, "s": "3x8/side", "eq": "DBs 25-35lb", "role": "Unilateral"}, {"n": "Cable curl", "u": false, "s": "3x12", "eq": "cable pulley + straight bar", "role": "Secondary"}], "note": "4 rounds, 90s rest. Lateral lunge adds frontal-plane strength for swim catch and run crossover.", "metcon": "5 rounds: 5 jump squats (BW) + 10 step-ups (35lb KBs) + 10 med ball slams (20lb). 30s rest.", "metconEquip": "35lb KBs \u00b7 plyo boxes \u00b7 20lb med ball"}, {"block": 5, "blockWk": "Weeks 13\u201315 \u2014 Strength-Power", "focus": "chest", "secondary": "Calves", "warmup": "5 min Concept 2 row \u00b7 PNF pec stretch 30s/side \u00b7 scap push-up x15", "exercises": [{"n": "DB flat press (alternating, one arm at a time)", "u": true, "s": "4x8/side", "eq": "DBs 35-50lb + flat bench", "role": "Unilateral-led"}, {"n": "Barbell bent-over row (supinated grip)", "u": false, "s": "4x8", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Standing barbell calf raise", "u": false, "s": "3x15", "eq": "straight barbell on back + plate for heel lift", "role": "Secondary"}], "note": "4 rounds, 90s rest. Alternating DB press introduces unilateral anti-rotation; barbell row balances the push.", "metcon": "AMRAP 10 min: 8 alt DB press/side (40lb) + 8 barbell rows + 10 push-ups. Log rounds.", "metconEquip": "40lb DBs \u00b7 straight barbell"}, {"block": 5, "blockWk": "Weeks 13\u201315 \u2014 Strength-Power", "focus": "deadlift", "secondary": "Abs/Core", "warmup": "5 min Concept 2 row \u00b7 world greatest stretch x5/side \u00b7 glute bridge x15", "exercises": [{"n": "Deficit deadlift (stand on 45lb plates)", "u": false, "s": "4x4 @78% 1RM", "eq": "straight barbell + 45lb plates", "role": "Bilateral"}, {"n": "Single-leg hip thrust (DB on hip)", "u": true, "s": "3x10/side", "eq": "DB 35-45lb + flat bench", "role": "Unilateral"}, {"n": "KB windmill", "u": true, "s": "3x6/side", "eq": "20-35lb KB", "role": "Secondary"}], "note": "4 rounds, 90s rest. Deficit DL builds hip hinge depth and range. Windmill is shoulder + hip stability combo.", "metcon": "EMOM 10 min: odd = 8 KB swings (72lb) + 5 SL hip thrust/side \u00b7 even = 20s plank.", "metconEquip": "72lb KB \u00b7 35lb DB \u00b7 flat bench"}, {"block": 5, "blockWk": "Weeks 13\u201315 \u2014 Strength-Power", "focus": "shoulders", "secondary": "Triceps", "warmup": "5 min assault bike \u00b7 band pull-aparts x20 \u00b7 prone Y-T-W x8", "exercises": [{"n": "DB push press (bilateral, explosive)", "u": false, "s": "5x4", "eq": "DBs 35-45lb", "role": "Bilateral"}, {"n": "Single-arm DB push press (standing)", "u": true, "s": "3x8/side", "eq": "DB 30-40lb", "role": "Unilateral"}, {"n": "Overhead tricep extension (DB, two-hand)", "u": false, "s": "3x12", "eq": "DB 20-30lb", "role": "Secondary"}], "note": "4 rounds, 90s rest. Bilateral push press for power, then single-arm for unilateral carryover.", "metcon": "3 rounds: 10 DB push press + 12 SA cable rows/side + 15 band pull-aparts. 30s rest.", "metconEquip": "35-45lb DBs \u00b7 cable"}, {"block": 5, "blockWk": "Weeks 13\u201315 \u2014 Strength-Power", "focus": "frontsquat", "secondary": "Minor Shoulder (rear delt/rotator)", "warmup": "5 min assault bike \u00b7 ankle mob x20 \u00b7 goblet squat hold 60s (35lb)", "exercises": [{"n": "Front squat + push press complex (3+3)", "u": false, "s": "4x3+3", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Step-up + knee drive (DB, loaded)", "u": true, "s": "3x8/side", "eq": "DBs 25-35lb + plyo box", "role": "Unilateral"}, {"n": "Cable face pull", "u": false, "s": "3x15", "eq": "cable pulley", "role": "Secondary"}], "note": "4 rounds, 90s rest. Front squat + push press complex is direct triathlon power transfer.", "metcon": "4 rounds: 8 step-up + knee drive/side (25lb DBs) + 10 wall balls (20lb) + 10 jump rope double-unders.", "metconEquip": "25lb DBs \u00b7 plyo boxes \u00b7 20lb wall ball \u00b7 jump rope"}, {"block": 5, "blockWk": "Weeks 13\u201315 \u2014 Strength-Power", "focus": "back", "secondary": "Biceps", "warmup": "5 min treadmill \u00b7 cat-cow x10 \u00b7 doorframe pec stretch + band pull-aparts x20", "exercises": [{"n": "Trap bar row (explosive pull)", "u": false, "s": "4x6", "eq": "trap barbell", "role": "Bilateral"}, {"n": "Single-arm DB press (floor, alternating)", "u": true, "s": "4x8/side", "eq": "DBs 35-45lb + floor", "role": "Unilateral"}, {"n": "Spider curl (EZ bar, incline bench)", "u": false, "s": "3x10", "eq": "curl bar + incline bench", "role": "Secondary"}], "note": "4 rounds, 90s rest. Trap bar row is explosive hip drive into the pull \u2014 power for the swim catch.", "metcon": "AMRAP 10 min: 6 trap bar rows + 8 SA floor press/side + 10 KB swings (53lb). Log rounds.", "metconEquip": "trap barbell \u00b7 45lb DBs \u00b7 53lb KB"}, {"block": 6, "blockWk": "Weeks 16\u201318 \u2014 Max Strength", "focus": "squat", "secondary": "Biceps", "warmup": "5 min assault bike \u00b7 deep squat hang 45s \u00b7 banded hip circle x15 \u00b7 jump squat x5", "exercises": [{"n": "Barbell back squat \u2014 3RM attempt", "u": false, "s": "5x3 @87-90% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "RFESS (barbell, max load)", "u": true, "s": "4x5/side", "eq": "straight barbell + flat bench", "role": "Unilateral"}, {"n": "Barbell curl (max-effort, controlled)", "u": false, "s": "3x6", "eq": "curl bar", "role": "Secondary"}], "note": "4 rounds, 90s rest (extend to 2 min if needed for 3RM sets). The strength apex for squat pattern.", "metcon": "5 rounds: 5 box jumps + 10 KB goblet reverse lunges/side (53lb) + 10 toes-to-bar. 45s rest.", "metconEquip": "53lb KB \u00b7 plyo boxes \u00b7 pull-up bar"}, {"block": 6, "blockWk": "Weeks 16\u201318 \u2014 Max Strength", "focus": "chest", "secondary": "Calves", "warmup": "5 min Concept 2 row \u00b7 band pull-aparts x25 \u00b7 thoracic foam roll 60s", "exercises": [{"n": "Barbell flat bench \u2014 5RM attempt", "u": false, "s": "5x3-5 @87% 1RM", "eq": "straight barbell + flat bench", "role": "Bilateral"}, {"n": "Single-arm DB press (standing, peak load)", "u": true, "s": "4x5/side", "eq": "DB 45-50lb", "role": "Unilateral"}, {"n": "Single-leg calf raise (weighted)", "u": true, "s": "3x15/side", "eq": "DB held in one hand", "role": "Secondary"}], "note": "4 rounds, 90s rest. Bench 5RM is the bilateral pushing apex. Single-leg calf raise \u2014 chase even loading.", "metcon": "For time: 15-12-9 bench press (60-65% 1RM) + weighted pull-ups. Record time and loads.", "metconEquip": "straight barbell + flat bench \u00b7 pull-up bar + vest"}, {"block": 6, "blockWk": "Weeks 16\u201318 \u2014 Max Strength", "focus": "deadlift", "secondary": "Abs/Core", "warmup": "5 min Concept 2 row \u00b7 90/90 hip stretch \u00b7 glute bridge x15 \u00b7 PVC RDL x10", "exercises": [{"n": "Conventional deadlift \u2014 2-3RM attempt", "u": false, "s": "5x2-3 @88-92% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Single-leg RDL (KB, max controllable load)", "u": true, "s": "4x6/side", "eq": "53lb KB", "role": "Unilateral"}, {"n": "Hanging leg raise (weighted)", "u": false, "s": "3x10", "eq": "pull-up bar + ankle weights or DB between feet", "role": "Secondary"}], "note": "4 rounds, 90s rest (extend for heavy sets). DL 2-3RM is the strength apex pull for the entire program.", "metcon": "EMOM 12 min: odd = 3 heavy DL (80%) \u00b7 even = 8 KB swings (72lb) \u00b7 +2: 20s hollow hold.", "metconEquip": "straight barbell \u00b7 72lb KB"}, {"block": 6, "blockWk": "Weeks 16\u201318 \u2014 Max Strength", "focus": "shoulders", "secondary": "Triceps", "warmup": "5 min assault bike \u00b7 band dislocates x10 \u00b7 face pulls x20 \u00b7 SA KB warm-up x5/side (20lb)", "exercises": [{"n": "Barbell strict OHP \u2014 5RM attempt", "u": false, "s": "5x3-5 @85-88% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "Single-arm KB press (53lb \u2014 max reps/side)", "u": true, "s": "4x max/side", "eq": "53lb KB", "role": "Unilateral"}, {"n": "Skull crusher (heavy)", "u": false, "s": "3x8", "eq": "curl bar + flat bench", "role": "Secondary"}], "note": "4 rounds, 90s rest. OHP 5RM + SA 53lb KB max reps \u2014 the pressing apex, bilateral and unilateral.", "metcon": "AMRAP 10 min: 5 strict pull-ups + 5 SA KB press/side (53lb) + 10 box jumps. Compare to all blocks.", "metconEquip": "pull-up bar + vest \u00b7 53lb KB \u00b7 plyo boxes"}, {"block": 6, "blockWk": "Weeks 16\u201318 \u2014 Max Strength", "focus": "frontsquat", "secondary": "Minor Shoulder (rear delt/rotator)", "warmup": "5 min assault bike \u00b7 deep squat hold 60s on bar \u00b7 ankle mob x20 \u00b7 goblet squat x10 light", "exercises": [{"n": "Front squat \u2014 3RM attempt", "u": false, "s": "5x3 @87-90% 1RM", "eq": "straight barbell", "role": "Bilateral"}, {"n": "RFESS (KB front rack, max load)", "u": true, "s": "4x6/side", "eq": "53lb KBs + flat bench", "role": "Unilateral"}, {"n": "Band external rotation (slow)", "u": true, "s": "3x15/side", "eq": "resistance band", "role": "Secondary"}], "note": "4 rounds, 90s rest (extend for 3RM). Front squat 3RM + KB RFESS max \u2014 full lower body apex.", "metcon": "4 rounds: 10 KB front rack step-ups/side (35lb) + 10 jump rope + 10 slam balls (25lb) + 10 v-ups. 45s rest.", "metconEquip": "35lb KBs \u00b7 plyo boxes \u00b7 jump rope \u00b7 25lb slam ball"}, {"block": 6, "blockWk": "Weeks 16\u201318 \u2014 Max Strength", "focus": "back", "secondary": "Biceps", "warmup": "5 min treadmill \u00b7 band pull-aparts x25 \u00b7 doorframe pec stretch + scap pull-up x10", "exercises": [{"n": "Weighted pull-up \u2014 3RM (max load)", "u": false, "s": "5x3 heaviest vest", "eq": "pull-up bar + weighted vest", "role": "Bilateral"}, {"n": "Single-arm landmine row (max load)", "u": true, "s": "4x5/side", "eq": "barbell landmine setup", "role": "Unilateral"}, {"n": "Drag curl (heavy)", "u": false, "s": "3x8", "eq": "straight barbell", "role": "Secondary"}], "note": "4 rounds, 90s rest. Weighted pull-up 3RM \u2014 the pulling apex. This is your 18-week marker session.", "metcon": "For time: 21-15-9 pull-ups + dips. Then 3x6 SA KB swing/side (72lb). Record everything.", "metconEquip": "pull-up bar + vest \u00b7 dip bar + vest \u00b7 72lb KB"}];
+
+const FOCUS_LABELS = {
+  squat: 'Squat', chest: 'Chest', deadlift: 'Deadlift',
+  shoulders: 'Shoulders', frontsquat: 'Front Squat', back: 'Back'
+};
+const ROLE_BADGE = {
+  'Bilateral': ['BILAT','badge-bilateral'],
+  'Unilateral': ['UNILAT','badge-unilateral'],
+  'Unilateral-led': ['UNILAT','badge-unilateral'],
+  'Secondary': ['2ND','badge-secondary']
+};
+
+const STORAGE_KEY = 'ironStrength_currentDay';
+const LOG_KEY = 'ironStrength_logs'; // { "dayIdx-exName": {weight, notes, ts} }
+
+let currentDay = parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10);
+if (isNaN(currentDay) || currentDay < 0 || currentDay >= PROGRAM.length) currentDay = 0;
+
+let logs = {};
+try { logs = JSON.parse(localStorage.getItem(LOG_KEY) || '{}'); } catch(e) { logs = {}; }
+
+function logKey(dayIdx, exName) { return dayIdx + '::' + exName; }
+function metconLogKey(dayIdx) { return dayIdx + '::metcon'; }
+
+function fmtDate(ts) {
+  const d = new Date(ts);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[d.getMonth()] + ' ' + d.getDate();
+}
+
+function render() {
+  const day = PROGRAM[currentDay];
+  const app = document.getElementById('app');
+  app.className = 'focus-' + day.focus;
+
+  document.getElementById('blockLabel').textContent =
+    'Block ' + day.block + ' · ' + day.blockWk.replace(/^Weeks \d+–\d+ — /, '');
+  document.getElementById('dayPill').textContent = 'Day ' + (currentDay+1) + ' / ' + PROGRAM.length;
+  document.getElementById('focusTitle').textContent = FOCUS_LABELS[day.focus] || day.focus;
+  document.getElementById('secTitle').textContent = '+ ' + day.secondary;
+  document.getElementById('progressFill').style.width = ((currentDay+1)/PROGRAM.length*100) + '%';
+  document.getElementById('warmupText').textContent = day.warmup;
+  document.getElementById('noteText').innerHTML = '<b>Note:</b> ' + day.note;
+  document.getElementById('metconText').textContent = day.metcon;
+  document.getElementById('metconKit').textContent = 'Kit: ' + day.metconEquip;
+
+  // Exercises
+  const container = document.getElementById('exercisesContainer');
+  container.innerHTML = '';
+  day.exercises.forEach((ex, i) => {
+    const [badgeTxt, badgeClass] = ROLE_BADGE[ex.role] || ['', ''];
+    const card = document.createElement('div');
+    card.className = 'ex-card';
+
+    const key = logKey(currentDay, ex.n);
+    const lastEntry = logs[key];
+
+    let lastTimeHtml = '';
+    if (lastEntry) {
+      const parts = [];
+      if (lastEntry.weight) parts.push(lastEntry.weight);
+      if (lastEntry.notes) parts.push('"' + lastEntry.notes + '"');
+      lastTimeHtml = '<div class="last-time">Last (' + fmtDate(lastEntry.ts) + '): ' +
+        (parts.length ? parts.join(' · ') : '—') + '</div>';
+    }
+
+    card.innerHTML = `
+      <div class="ex-head">
+        <div>
+          <div class="ex-name">${ex.n}</div>
+          <div class="ex-eq">${ex.eq}</div>
+        </div>
+        <div class="ex-badge ${badgeClass}">${badgeTxt}</div>
+      </div>
+      <div class="ex-sets">${ex.s}</div>
+      <div class="input-row">
+        <div class="input-group" style="flex:0 0 90px">
+          <label>Weight</label>
+          <input type="text" inputmode="decimal" class="weight-input" data-ex="${i}" data-field="weight"
+                 placeholder="lb" value="${lastEntry ? (lastEntry.weight||'') : ''}">
+        </div>
+        <div class="input-group">
+          <label>Notes</label>
+          <textarea data-ex="${i}" data-field="notes" placeholder="RPE, form, feel...">${lastEntry ? (lastEntry.notes||'') : ''}</textarea>
+        </div>
+      </div>
+      ${lastTimeHtml}
+    `;
+    container.appendChild(card);
+  });
+
+  // Met con notes — prefill from last entry for this day
+  const mcKey = metconLogKey(currentDay);
+  const mcLast = logs[mcKey];
+  document.getElementById('metconNotes').value = mcLast ? (mcLast.notes || '') : '';
+
+  document.getElementById('content').scrollTop = 0;
+}
+
+function saveCurrentInputs() {
+  const day = PROGRAM[currentDay];
+  const container = document.getElementById('exercisesContainer');
+  day.exercises.forEach((ex, i) => {
+    const weightInput = container.querySelector(`input[data-ex="${i}"][data-field="weight"]`);
+    const notesInput = container.querySelector(`textarea[data-ex="${i}"][data-field="notes"]`);
+    const weight = weightInput ? weightInput.value.trim() : '';
+    const notes = notesInput ? notesInput.value.trim() : '';
+    if (weight || notes) {
+      logs[logKey(currentDay, ex.n)] = { weight, notes, ts: Date.now() };
+    }
+  });
+  const mcNotes = document.getElementById('metconNotes').value.trim();
+  if (mcNotes) {
+    logs[metconLogKey(currentDay)] = { notes: mcNotes, ts: Date.now() };
+  }
+  localStorage.setItem(LOG_KEY, JSON.stringify(logs));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1400);
+}
+
+function goTo(idx, save=true) {
+  if (save) saveCurrentInputs();
+  currentDay = ((idx % PROGRAM.length) + PROGRAM.length) % PROGRAM.length;
+  localStorage.setItem(STORAGE_KEY, String(currentDay));
+  render();
+}
+
+document.getElementById('completeBtn').addEventListener('click', () => {
+  saveCurrentInputs();
+  const wrapping = currentDay === PROGRAM.length - 1;
+  goTo(currentDay + 1, false);
+  showToast(wrapping ? 'Rotation complete — back to Day 1! 🎉' : 'Saved! On to Day ' + (currentDay+1));
+});
+document.getElementById('prevBtn').addEventListener('click', () => goTo(currentDay - 1));
+document.getElementById('nextBtn').addEventListener('click', () => goTo(currentDay + 1));
+
+render();
+
+// Save on page hide (in case user closes app without tapping Completed)
+window.addEventListener('pagehide', saveCurrentInputs);
+window.addEventListener('beforeunload', saveCurrentInputs);
+</script>
+</body>
+</html>
